@@ -16,12 +16,29 @@
             $scope.title = "loading question...";
             $scope.options = [];
 
-            $http.get("/api/trivia").success(function (data, status, headers, config) {
+            $http.get("/api/trivia").then(function (res) {
+                var data = res.data;
                 $scope.options = data.options;
                 $scope.title = data.title;
                 $scope.answered = false;
                 $scope.working = false;
-            }).error(function (data, status, headers, config) {
+            }).catch(function (res) {
+                $scope.title = "Oops... something went wrong";
+                $scope.working = false;
+            });
+
+        };
+
+        $scope.sendAnswer = function (option) {
+            $scope.working = true;
+            $scope.answered = true;
+
+            $http.post('/api/trivia', { 'questionId': option.questionId, 'optionId': option.id }).then(function (res) {
+                var data = res.data;
+                $scope.correctAnswer = (data === true);
+                $scope.working = false;
+            }).catch(function (res) {
+                var data = res.data;
                 $scope.title = "Oops... something went wrong";
                 $scope.working = false;
             });
