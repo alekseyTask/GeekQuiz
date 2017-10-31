@@ -12,7 +12,7 @@ using GeekQuiz.Models;
 
 namespace GeekQuiz.Controllers
 {
-    [Authorize]
+     [Authorize]
     public class TriviaController : ApiController
     {
         private TriviaContext db = new TriviaContext();
