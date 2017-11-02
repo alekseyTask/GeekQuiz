@@ -3,6 +3,7 @@
     using System.ComponentModel.DataAnnotations.Schema;
     using Newtonsoft.Json;
 
+
     public class TriviaAnswer
     {
         public int Id { get; set; }

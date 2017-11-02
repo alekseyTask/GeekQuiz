@@ -16,9 +16,35 @@ namespace GeekQuiz.Controllers
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
 
-        public ManageController()
-        {
-        }
+        //public ApplicationSignInManager SignInManager		
+        // {		
+        //     get		
+        //     {		
+        //         return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();		
+        //     }		
+        //     private set 		
+        //     { 		
+        //         _signInManager = value; 		
+        //     }		
+        // }		
+ 		
+        // public ApplicationUserManager UserManager
+        // {		
+        //     get		
+        //     {		
+        //         return _userManager ?? HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();		
+        //     }		
+        //    private set		
+        //     {		
+        //         _userManager = value;		
+        //     }		
+        //  }
+
+        //public ManageController()
+        //{
+        //}
+
+
 
         public ManageController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
         {

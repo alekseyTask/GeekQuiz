@@ -34,7 +34,7 @@ namespace GeekQuiz
 
     // Configure the application user manager used in this application. UserManager is defined in ASP.NET Identity and is used by the application.
     public class ApplicationUserManager : UserManager<ApplicationUser>
-    {
+    { 
         public ApplicationUserManager(IUserStore<ApplicationUser> store)
             : base(store)
         {
@@ -88,6 +88,7 @@ namespace GeekQuiz
         }
     }
 
+
     // Configure the application sign-in manager which is used in this application.
     public class ApplicationSignInManager : SignInManager<ApplicationUser, string>
     {
@@ -104,6 +105,11 @@ namespace GeekQuiz
         public static ApplicationSignInManager Create(IdentityFactoryOptions<ApplicationSignInManager> options, IOwinContext context)
         {
             return new ApplicationSignInManager(context.GetUserManager<ApplicationUserManager>(), context.Authentication);
+        }
+
+        public static ApplicationSignInManager Create(ApplicationUserManager appManager, IAuthenticationManager authManager)
+        {
+            return new ApplicationSignInManager(appManager, authManager);
         }
     }
 }
