@@ -15,19 +15,13 @@ namespace GeekQuiz.Controllers
      [Authorize]
     public class TriviaController : ApiController
     {
-        private TriviaContext _db = new TriviaContext();
-
-        public TriviaController(TriviaContext db)
-        {
-            _db = db;
-        }
-
+        private TriviaContext db = new TriviaContext();
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                this._db.Dispose();
+                this.db.Dispose();
             }
 
             base.Dispose(disposing);
@@ -64,7 +58,7 @@ namespace GeekQuiz.Controllers
 
         private async Task<TriviaQuestion> NextQuestionAsync(string userId)
         {
-            var lastQuestionId = await this._db.TriviaAnswers
+            var lastQuestionId = await this.db.TriviaAnswers
                 .Where(a => a.UserId == userId)
                 .GroupBy(a => a.QuestionId)
                 .Select(g => new { QuestionId = g.Key, Count = g.Count() })
@@ -72,18 +66,18 @@ namespace GeekQuiz.Controllers
                 .Select(q => q.QuestionId)
                 .FirstOrDefaultAsync();
 
-            var questionsCount = await this._db.TriviaQuestions.CountAsync();
+            var questionsCount = await this.db.TriviaQuestions.CountAsync();
 
             var nextQuestionId = (lastQuestionId % questionsCount) + 1;
-            return await this._db.TriviaQuestions.FindAsync(CancellationToken.None, nextQuestionId);
+            return await this.db.TriviaQuestions.FindAsync(CancellationToken.None, nextQuestionId);
         }
 
         private async Task<bool> StoreAsync(TriviaAnswer answer)
         {
-            this._db.TriviaAnswers.Add(answer);
+            this.db.TriviaAnswers.Add(answer);
 
-            await this._db.SaveChangesAsync();
-            var selectedOption = await this._db.TriviaOptions.FirstOrDefaultAsync(o => o.Id == answer.OptionId
+            await this.db.SaveChangesAsync();
+            var selectedOption = await this.db.TriviaOptions.FirstOrDefaultAsync(o => o.Id == answer.OptionId
                 && o.QuestionId == answer.QuestionId);
 
             return selectedOption.IsCorrect;
