@@ -1,6 +1,4 @@
-﻿
-//[assembly: WebActivator.PostApplicationStartMethod(typeof(GeekQuiz.App_Start.SimpleInjectorMVCApiInitializer), "Initialize")]
-namespace GeekQuiz.App_Start
+﻿namespace GeekQuiz.App_Start
 {
     using GeekQuiz.Models;
     using Microsoft.AspNet.Identity;
@@ -12,6 +10,7 @@ namespace GeekQuiz.App_Start
     using SimpleInjector.Advanced;
     using SimpleInjector.Integration.Web;
     using SimpleInjector.Integration.Web.Mvc;
+    using SimpleInjector.Integration.WebApi;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -20,14 +19,34 @@ namespace GeekQuiz.App_Start
     using System.Web.Http;
     using System.Web.Mvc;
 
-    public class SimpleInjectorMVCApiInitializer
+    public static class SimpleInjectorInitializer
     {
         public static void Initialize()
+        {
+            InitializeWebAPI();
+            InitializeMvc();
+        }
+
+        public static void InitializeWebAPI()
+        {
+            var container = new Container();
+            container.Options.DefaultScopedLifestyle = new WebApiRequestLifestyle();
+
+            InitializeContainerWebApi(container);
+
+            container.RegisterWebApiControllers(GlobalConfiguration.Configuration);
+
+            container.Verify();
+
+            GlobalConfiguration.Configuration.DependencyResolver = new SimpleInjectorWebApiDependencyResolver(container);
+        }
+
+        public static void InitializeMvc()
         {
             var container = new Container();
             container.Options.DefaultScopedLifestyle = new WebRequestLifestyle();
 
-            InitializeContainer(container);
+            InitializeContainerMvc(container);
 
             container.RegisterMvcControllers(Assembly.GetExecutingAssembly());
 
@@ -36,7 +55,7 @@ namespace GeekQuiz.App_Start
             DependencyResolver.SetResolver(new SimpleInjectorDependencyResolver(container));
         }
 
-        private static void InitializeContainer(Container container)
+        private static void InitializeContainerMvc(Container container)
         {
             container.Register<ApplicationSignInManager>(Lifestyle.Scoped);
             container.Register<ApplicationUserManager>(Lifestyle.Scoped);
@@ -48,6 +67,11 @@ namespace GeekQuiz.App_Start
                         : HttpContext.Current.GetOwinContext(), Lifestyle.Scoped);
 
             container.Register<IUserStore<ApplicationUser>>(() => new UserStore<ApplicationUser>(container.GetInstance<ApplicationDbContext>()), Lifestyle.Scoped);
+        }
+
+        private static void InitializeContainerWebApi(Container container)
+        {
+            container.Register<TriviaContext>(Lifestyle.Scoped);
         }
     }
 }
