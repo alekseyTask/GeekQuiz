@@ -1,4 +1,4 @@
-[assembly: WebActivator.PostApplicationStartMethod(typeof(GeekQuiz.App_Start.SimpleInjectorWebApiInitializer), "Initialize")]
+[assembly: WebActivator.PostApplicationStartMethod(typeof(GeekQuiz.App_Start.SimpleInjectorInitializer), "Initialize")]
 
 namespace GeekQuiz.App_Start
 {
@@ -15,14 +15,18 @@ namespace GeekQuiz.App_Start
     using SimpleInjector.Advanced;
     using System.Collections.Generic;
     using GeekQuiz.Models;
+    using SimpleInjector.Integration.Web;
+    using SimpleInjector.Integration.Web.Mvc;
+    using Microsoft.AspNet.Identity;
+    using Microsoft.AspNet.Identity.EntityFramework;
 
-    public static class SimpleInjectorWebApiInitializer
+    public static class SimpleInjectorInitializer
     {
         /// <summary>Initialize the container and register it as Web API Dependency Resolver.</summary>
         public static void Initialize()
         {
             var container = new Container();
-            container.Options.DefaultScopedLifestyle = new WebApiRequestLifestyle();
+            container.Options.DefaultScopedLifestyle = new WebRequestLifestyle();
             
             InitializeContainer(container);
 
@@ -30,40 +34,25 @@ namespace GeekQuiz.App_Start
        
             container.Verify();
             
-            GlobalConfiguration.Configuration.DependencyResolver =
-                new SimpleInjectorWebApiDependencyResolver(container);
+            GlobalConfiguration.Configuration.DependencyResolver = new SimpleInjectorWebApiDependencyResolver(container);
+
+            System.Web.Mvc.DependencyResolver.SetResolver(new SimpleInjectorDependencyResolver(container));
         }
      
         private static void InitializeContainer(Container container)
         {
-            //#error Register your services here (remove this line).
+            container.Register<ApplicationSignInManager>(Lifestyle.Scoped);
+            container.Register<ApplicationUserManager>(Lifestyle.Scoped);
+            container.Register<ApplicationDbContext>(Lifestyle.Scoped);
+            container.Register<IAuthenticationManager>(() => container.GetInstance<IOwinContext>().Authentication, Lifestyle.Scoped);
+            container.Register<IOwinContext>(() =>
+                        AdvancedExtensions.IsVerifying(container)
+                        ? new OwinContext(new Dictionary<string, object>())
+                        : HttpContext.Current.GetOwinContext(), Lifestyle.Scoped);
 
-            // For instance:
-            // container.Register<IUserRepository, SqlUserRepository>(Lifestyle.Scoped);
+            container.Register<IUserStore<ApplicationUser>>(() => new UserStore<ApplicationUser>(container.GetInstance<ApplicationDbContext>()), Lifestyle.Scoped);
 
-            //container.EnableHttpRequestMessageTracking(GlobalConfiguration.Configuration);
-            //container.Register<ApplicationUserManager, ApplicationUserManager>(Lifestyle.Scoped);
-            //container.Register<ApplicationSignInManager, ApplicationSignInManager>(Lifestyle.Scoped);
-
-            //container.EnableHttpRequestMessageTracking(GlobalConfiguration.Configuration);
-            //HttpContext.GetOwinContext().Get<ApplicationSignInManager>()
-
-            //container.EnableHttpRequestMessageTracking(GlobalConfiguration.Configuration);
-
-            //container.Register<ApplicationSignInManager>(() => HttpContext.Current.GetOwinContext().Get<ApplicationSignInManager>(), Lifestyle.Scoped);
-
-            //container.RegisterPerWebRequest<ApplicationSignInManager>(() =>
-            //            AdvancedExtensions.IsVerifying(container)
-            //            ? new OwinContext(new Dictionary<string, object>()).Authentication
-            //            : HttpContext.Current.GetOwinContext().Get<ApplicationSignInManager>());
-
-            //container.Register<ApplicationSignInManager>(() =>
-            //    AdvancedExtensions.IsVerifying(container) ? new OwinContext().Get<ApplicationSignInManager>() : HttpContext.Current.GetOwinContext().Get<ApplicationSignInManager>());
-
-            //container.Register<ApplicationUserManager>(() => HttpContext.Current.GetOwinContext().Get<ApplicationUserManager>(), Lifestyle.Scoped);
-
-            //container.Register<ApplicationUserManager>(() =>
-            //AdvancedExtensions.IsVerifying(container) ? new OwinContext().Get<ApplicationUserManager>() : HttpContext.Current.GetOwinContext().Get<ApplicationUserManager>());        
+            container.Register<TriviaContext>(Lifestyle.Scoped);
         }
     }
 }
