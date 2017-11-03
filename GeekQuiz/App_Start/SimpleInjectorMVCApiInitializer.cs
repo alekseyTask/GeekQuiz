@@ -1,5 +1,5 @@
 ﻿
-[assembly: WebActivator.PostApplicationStartMethod(typeof(GeekQuiz.App_Start.SimpleInjectorMVCApiInitializer), "Initialize")]
+//[assembly: WebActivator.PostApplicationStartMethod(typeof(GeekQuiz.App_Start.SimpleInjectorMVCApiInitializer), "Initialize")]
 namespace GeekQuiz.App_Start
 {
     using GeekQuiz.Models;
